@@ -1,76 +1,136 @@
 // Importar dependencias y módulos
-const bcrypt = require("bcrypt");
-const Pagination = require("mongoose-pagination");
-const fs = require("fs");
-const path = require("path");
+const bcrypt = require("bcrypt")
+const Pagination = require("mongoose-pagination")
+const fs = require("fs")
+const path = require("path")
 
 // Importar modelos
-const User = require("../models/user");
+const User = require("../models/user")
+
+// Importar servicios
+const jwt = require("../services/jwt")
 
 // Registrar de usuarios
 const register = (req, res) => {
-  // Recoger datos de la petición
-  let params = req.body;
+    // Recoger datos de la petición
+    let params = req.body
 
-  // Comprobar que me llegan bien (+ validación)
-  if (!params.name || !params.email || !params.password) {
-    return res.status(400).json({
-      status: "error",
-      message: "Faltan datos por enviar",
-    });
-  }
-  //trasformar el texto en minúscula 
-  params.email = params.email.toLowerCase();
-  params.name = params.name.toLowerCase();
+    // Comprobar que me llegan bien (+ validación)
+    if (!params.name || !params.email || !params.password) {
+        return res.status(400).json({
+            status: "error",
+            message: "Faltan datos por enviar",
+        })
+    }
+    //trasformar el texto en minúscula
+    params.email = params.email.toLowerCase()
+    params.name = params.name.toLowerCase()
 
-  // Control usuarios duplicados
-  User.find({
-    $or: [{ email: params.email }],
-  }).exec(async (error, users) => {
-    if (error) {
-      return res.status(500).json({
-        status: "error",
-        message: "Error en la consulta de usuarios",
-      });
+    // Control usuarios duplicados
+    User.find({
+        $or: [{ email: params.email }],
+    }).exec(async (error, users) => {
+        if (error) {
+            return res.status(500).json({
+                status: "error",
+                message: "Error en la consulta de usuarios",
+            })
+        }
+
+        if (users && users.length >= 1) {
+            return res.status(200).send({
+                status: "success",
+                message: "El usuario ya existe",
+            })
+        }
+
+        // Cifrar la contraseña
+        let pwd = await bcrypt.hash(params.password, 10)
+        params.password = pwd
+        // Crear objeto de usuario
+        let NewUser = new User(params)
+
+        // Guardar usuario en la Base de Datos
+        NewUser.save((error, userStored) => {
+            if (error || !userStored)
+                return res.status(500).send({
+                    status: "error",
+                    message: "Error al guardar el usuario",
+                })
+
+            // Eliminar password de la petición
+            userStored.toObject()
+            delete userStored.password
+
+            // Devolver resultado
+            return res.status(200).json({
+                status: "success",
+                message: "Usuario registrado correctamente",
+                user: userStored,
+            })
+        })
+    })
+} //fin del register
+
+// Login de usuarios
+const login = (req, res) => {
+    // Recoger datos de la petición
+    let params = req.body
+
+    // verificar que me llegan email y password
+    if (!params.email || !params.password) {
+        return res.status(400).send({
+            status: "error",
+            message: "Faltan datos por enviar",
+        })
     }
 
-    if (users && users.length >= 1) {
-      return res.status(200).send({
-        status: "success",
-        message: "El usuario ya existe",
-      });
-    }
+    //trasformar el texto en minúscula
+    params.email = params.email.toLowerCase()
 
-    // Cifrar la contraseña
-    let pwd = await bcrypt.hash(params.password, 10);
-    params.password = pwd;
-    // Crear objeto de usuario
-    let NewUser = new User(params);
+    // Buscar en la Base de Datos si existe
+    User.findOne({ email: params.email })
+        //.select({ password: 0 })
+        .exec((error, user) => {
+            if (error || !user)
+                return res
+                    .status(404)
+                    .send({ status: "error", message: "No existe el usuario" })
 
-    // Guardar usuario en la Base de Datos
-    NewUser.save((error, userStored) => {
-      if (error || !userStored)
-        return res
-          .status(500)
-          .send({ status: "error", message: "Error al guardar el usuario" });
+            // Comprobar contraseña
+            const pwd = bcrypt.compareSync(params.password, user.password)
 
-      // Eliminar password de la petición
-      userStored.toObject();
-      delete userStored.password;
+            if (!pwd) {
+                return res.status(400).send({
+                    status: "error",
+                    message: "No te has identificado correctamente",
+                })
+            }
 
-      // Devolver resultado
-      return res.status(200).json({
-        status: "success",
-        message: "Usuario registrado correctamente",
-        user: userStored,
-      });
-    });
-  });
-}; //fin del register
+            // Conseguir Token
+            const token = jwt.createToken(user)
+
+            // Devolver Datos del usuario
+            return res.status(200).send({
+                status: "success",
+                message: "Te has identificado correctamente",
+                user: {
+                    id: user._id,
+                    name: user.name,
+                    nick: user.nick,
+                },
+                token,
+            })
+        })
+} //fin del login
+
+
+
 
 module.exports = {
-  register,
-};
+    register,
+    login,
+}
 
 /**
  * Importar dependencias y módulos

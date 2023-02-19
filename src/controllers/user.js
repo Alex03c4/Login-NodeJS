@@ -124,12 +124,70 @@ const login = (req, res) => {
         })
 } //fin del login
 
+// perfil de usuario
+const profile = (req, res) => {
+    // Recibir el parámetro del id de usuario por la url
+    const id = req.params.id
 
+    // Consulta para sacar los datos del usuario
+    User.findById(id)
+        .select({ password: 0 })
+        .exec(async (error, userProfile) => {
+            if (error || !userProfile) {
+                return res.status(404).send({
+                    status: "error",
+                    message: "El usuario no existe o hay un error",
+                })
+            }
 
+            // Devolver el resultado
+            return res.status(200).send({
+                status: "success",
+                user: userProfile,
+            })
+        })
+} // fin de perfil de usuario
+
+// Listar Usuarios
+const list = (req, res) => {
+    // Controlar en que pagina estamos
+    let page = 1
+    if (req.params.page) {
+        page = req.params.page
+    }
+    page = parseInt(page)
+
+    // Consulta con mongoose paginate
+    let itemsPerPage = 5
+
+    User.find()
+        .select("-password -email -__v")
+        .sort("_id")
+        .paginate(page, itemsPerPage, async (error, users, total) => {
+            if (error || !users) {
+                return res.status(404).send({
+                    status: "error",
+                    message: "No hay usuarios disponibles",
+                    error,
+                })
+            }            
+            // Devolver el resultado (posteriormente info follow)
+            return res.status(200).send({
+                status: "success",
+                users,
+                page,
+                itemsPerPage,
+                total,
+                pages: Math.ceil(total / itemsPerPage),                
+            })
+        })
+}//fin list
 
 module.exports = {
     register,
     login,
+    profile,
+    list,
 }
 
 /**
@@ -151,6 +209,14 @@ module.exports = {
  */
 
 /**
+ * Importar servicios
+ * @param {jwt} servicio Json Web Token
+ */
+
+/**
  * funciones
- * @return {register} devuelve el nuevo usuario registrado en la Basa de Datos
+ * @returns {register} devuelve el nuevo usuario registrado en la Basa de Datos.
+ * @returns {login} devuelve el usuario que hace login y genera un Json Web Token.
+ * @returns {profile} devuelve el perfil de un usuario, según el paramentó que se le da por la URL.
+ * @returns {list} devuelve la lista de todos los usuarios registrados en la Basa de Datos.
  */

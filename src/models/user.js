@@ -14,7 +14,7 @@ const UserSchema = Schema({
     },
     image: {
         type: String,
-        default: "default.png"
+        default: "./src/img/default/user.png"
     },
 })
 module.exports = model("User", UserSchema, "users")

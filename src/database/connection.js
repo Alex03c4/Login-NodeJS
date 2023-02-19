@@ -3,7 +3,7 @@ const mongoose = require('mongoose')
 const connection = async () => {
     try {
         mongoose.set("strictQuery", false)
-        await mongoose.connect("mongodb+srv://Alex03c4:EOYDdQh90GZQ8Nkf@cluster0.myvgi.mongodb.net/login")        
+        await mongoose.connect("mongodb+srv://Alex03c4:EOYDdQh90GZQ8Nkf@cluster0.myvgi.mongodb.net/login-nodejs")        
         console.log("Conectado correctamente a la base de datos")
     } catch (error) {
         console.log(error)

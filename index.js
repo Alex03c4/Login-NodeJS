@@ -18,6 +18,10 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
 // Cargar conf rutas
+const UserRoutes = require('./src/routes/user')
+
+
+app.use("/api/user", UserRoutes)
 
 
 

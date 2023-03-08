@@ -29,6 +29,6 @@ app.use("/api/user", UserRoutes)
 
 
 // Poner servidor a escuchar peticiones http
-app.listen(puerto, () => {
+app.listen(PORT, () => {
     console.log('Servidor de node corriendo en el puerto '+ PORT)
 })

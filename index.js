@@ -1,5 +1,5 @@
 // Importar dependencias
-require('dotenv').config({path:'./.env'});
+//require('dotenv').config({path:'./.env'});
 const connection = require('./src/database/connection')
 const express = require('express')
 const cors = require('cors')
@@ -20,7 +20,9 @@ app.use(express.urlencoded({ extended: true }))
 
 // Cargar conf rutas
 const UserRoutes = require('./src/routes/user')
-
+app.get('/', (req, res) => {
+    res.status(200).send({msg:"Hello World!"});
+  })
 
 app.use("/api/user", UserRoutes)
 

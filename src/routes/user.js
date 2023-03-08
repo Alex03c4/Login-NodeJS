@@ -20,7 +20,7 @@ const uploads = multer({storage})
 router.post('/register', UserController.register)
 router.post("/login", UserController.login)
 router.get("/profile/:id",check.auth, UserController.profile)
-router.get("/list/:page?",check.auth, UserController.list)
+router.get("/list/:page?", UserController.list)
 router.put("/update", check.auth, UserController.update)
 // IMG
 router.post("/upload", [check.auth, uploads.single("IMG")], UserController.upload)

@@ -9,7 +9,7 @@ connection()
 
 //Crear servidor Node
 const app = express()
-const puerto = process.env.PUERTO || 3000
+const PORT = process.env.PORT || 3000
 
 // Configurar Cors
 app.use(cors())
@@ -28,5 +28,5 @@ app.use("/api/user", UserRoutes)
 
 // Poner servidor a escuchar peticiones http
 app.listen(puerto, () => {
-    console.log('Servidor de node corriendo en el puerto '+ puerto)
+    console.log('Servidor de node corriendo en el puerto '+ PORT)
 })

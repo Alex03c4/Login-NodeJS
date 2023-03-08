@@ -1,4 +1,5 @@
 // Importar dependencias
+require('dotenv').config({path:'./.env'});
 const connection = require('./src/database/connection')
 const express = require('express')
 const cors = require('cors')
@@ -8,7 +9,7 @@ connection()
 
 //Crear servidor Node
 const app = express()
-const puerto = 3900
+const puerto = process.env.PUERTO || 3000
 
 // Configurar Cors
 app.use(cors())
@@ -27,5 +28,5 @@ app.use("/api/user", UserRoutes)
 
 // Poner servidor a escuchar peticiones http
 app.listen(puerto, () => {
-    console.log('Servidor de node corriendo en el puerto  3900')
+    console.log('Servidor de node corriendo en el puerto '+ puerto)
 })
